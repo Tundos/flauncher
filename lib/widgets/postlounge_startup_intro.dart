@@ -23,99 +23,128 @@ class PostloungeStartupIntro extends StatefulWidget {
 
 class _PostloungeStartupIntroState extends State<PostloungeStartupIntro> {
   VideoPlayerController? _controller;
-  bool _showIntro = false;
-  bool _introVisible = false;
-  bool _finished = false;
+  bool _introDone = false;
+  bool _wantsIntro = false;
+  bool _ready = false;
+  bool _finishing = false;
+  Object? _initError;
 
   @override
   void initState() {
     super.initState();
-    _showIntro = postloungeShouldPlayStartupIntro(widget.sharedPreferences);
-    if (_showIntro) {
+    _wantsIntro = postloungeShouldPlayStartupIntro(widget.sharedPreferences);
+    if (_wantsIntro) {
       _prepareIntro();
+    } else {
+      _introDone = true;
     }
   }
 
   Future<void> _prepareIntro() async {
-    final controller = VideoPlayerController.asset(kPostloungeStartupVideo);
+    final controller = VideoPlayerController.asset(
+      kPostloungeStartupVideo,
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    );
     _controller = controller;
     try {
       await controller.initialize();
       await controller.setVolume(1);
+      controller.addListener(_onPlaybackUpdate);
       if (!mounted) return;
-      setState(() => _introVisible = true);
+      setState(() => _ready = true);
       await controller.play();
-      controller.addListener(_onTick);
-    } catch (_) {
-      await _completeIntro();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initError = e;
+          _introDone = true;
+        });
+      }
     }
   }
 
-  void _onTick() {
+  void _onPlaybackUpdate() {
     final controller = _controller;
-    if (controller == null || _finished) return;
-    if (controller.value.isInitialized && controller.value.isCompleted) {
-      _completeIntro();
+    if (controller == null || _finishing || !_ready) return;
+    if (!controller.value.isInitialized) return;
+
+    final duration = controller.value.duration;
+    final position = controller.value.position;
+    if (controller.value.isCompleted) {
+      _finishIntro(markPlayed: true);
+      return;
+    }
+    if (duration > Duration.zero && position >= duration - const Duration(milliseconds: 300)) {
+      _finishIntro(markPlayed: true);
     }
   }
 
-  Future<void> _completeIntro() async {
-    if (_finished) return;
-    _finished = true;
-    _controller?.removeListener(_onTick);
-    await postloungeMarkStartupIntroPlayed(widget.sharedPreferences);
+  Future<void> _finishIntro({required bool markPlayed}) async {
+    if (_finishing) return;
+    _finishing = true;
+    _controller?.removeListener(_onPlaybackUpdate);
+    if (markPlayed) {
+      await postloungeMarkStartupIntroPlayed(widget.sharedPreferences);
+    }
     await _controller?.pause();
     await _controller?.dispose();
     _controller = null;
     if (mounted) {
       setState(() {
-        _introVisible = false;
-        _showIntro = false;
+        _introDone = true;
+        _ready = false;
       });
     }
   }
 
+  Future<void> _skipIntro() => _finishIntro(markPlayed: true);
+
   @override
   void dispose() {
-    _controller?.removeListener(_onTick);
+    _controller?.removeListener(_onPlaybackUpdate);
     _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        widget.child,
-        if (_introVisible && _controller != null)
-          Material(
-            color: Colors.black,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Center(
-                  child: FittedBox(
-                    fit: BoxFit.contain,
-                    child: SizedBox(
-                      width: _controller!.value.size.width,
-                      height: _controller!.value.size.height,
-                      child: VideoPlayer(_controller!),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 24,
-                  bottom: 24,
-                  child: TextButton(
-                    onPressed: _completeIntro,
-                    child: const Text('Overslaan · Skip'),
-                  ),
-                ),
-              ],
+    if (_introDone) {
+      return widget.child;
+    }
+
+    if (!_ready || _controller == null) {
+      return const ColoredBox(
+        color: Colors.black,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final controller = _controller!;
+    return Material(
+      color: Colors.black,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: SizedBox(
+                width: controller.value.size.width,
+                height: controller.value.size.height,
+                child: VideoPlayer(controller),
+              ),
             ),
           ),
-      ],
+          Positioned(
+            right: 24,
+            bottom: 24,
+            child: TextButton(
+              onPressed: _skipIntro,
+              child: const Text('Overslaan · Skip'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

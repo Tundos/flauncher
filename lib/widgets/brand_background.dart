@@ -49,7 +49,10 @@ class _BrandBackgroundState extends State<BrandBackground> with WidgetsBindingOb
   }
 
   Future<void> _initVideo() async {
-    final controller = VideoPlayerController.asset(kPostloungeBrandBgVideo);
+    final controller = VideoPlayerController.asset(
+      kPostloungeBrandBgVideo,
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    );
     _controller = controller;
     try {
       await controller.initialize();
