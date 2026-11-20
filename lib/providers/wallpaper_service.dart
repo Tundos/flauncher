@@ -41,7 +41,7 @@ class WallpaperService extends ChangeNotifier {
 
   FLauncherGradient get gradient => FLauncherGradients.all.firstWhere(
         (gradient) => gradient.uuid == _settingsService.gradientUuid,
-        orElse: () => FLauncherGradients.greatWhale,
+        orElse: () => FLauncherGradients.postloungeBrand,
       );
 
   set settingsService(SettingsService settingsService) => _settingsService = settingsService;

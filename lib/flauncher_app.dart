@@ -44,17 +44,20 @@ class FLauncherApp extends StatelessWidget {
   final UnsplashService _unsplashService;
   final RemoteConfig _remoteConfig;
 
-  static const MaterialColor _swatch = MaterialColor(0xFF011526, <int, Color>{
-    50: Color(0xFF36A0FA),
-    100: Color(0xFF067BDE),
-    200: Color(0xFF045CA7),
-    300: Color(0xFF033662),
-    400: Color(0xFF022544),
-    500: Color(0xFF011526),
-    600: Color(0xFF000508),
-    700: Color(0xFF000000),
-    800: Color(0xFF000000),
-    900: Color(0xFF000000),
+  static const Color _accent = Color(0xFF007DFA);
+  static const Color _primarySurface = Color(0xFFF7F1EB);
+
+  static const MaterialColor _swatch = MaterialColor(0xFF007DFA, <int, Color>{
+    50: Color(0xFFE8F3FF),
+    100: Color(0xFFBBD9FF),
+    200: Color(0xFF007DFA),
+    300: Color(0xFF0062C7),
+    400: Color(0xFF004A96),
+    500: Color(0xFF003366),
+    600: Color(0xFF002952),
+    700: Color(0xFF001F3D),
+    800: Color(0xFF001428),
+    900: Color(0xFF000A14),
   });
 
   FLauncherApp(
@@ -93,29 +96,31 @@ class FLauncherApp extends StatelessWidget {
             ...WidgetsApp.defaultActions,
             DirectionalFocusIntent: SoundFeedbackDirectionalFocusAction(),
           },
-          title: 'FLauncher',
+          title: 'Postlounge TV',
           theme: ThemeData(
             brightness: Brightness.dark,
             primarySwatch: _swatch,
-            toggleableActiveColor: _swatch[200],
+            primaryColor: _accent,
+            focusColor: _accent,
+            toggleableActiveColor: _accent,
             // ignore: deprecated_member_use
-            accentColor: _swatch[200],
-            cardColor: _swatch[300],
-            canvasColor: _swatch[300],
-            dialogBackgroundColor: _swatch[400],
-            backgroundColor: _swatch[400],
-            scaffoldBackgroundColor: _swatch[400],
-            textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(primary: Colors.white)),
-            appBarTheme: AppBarTheme(elevation: 0, backgroundColor: Colors.transparent),
+            accentColor: _accent,
+            cardColor: Color(0xFF2A2622),
+            canvasColor: Color(0xFF2A2622),
+            dialogBackgroundColor: Color(0xFF1E1B18),
+            backgroundColor: Color(0xFF1E1B18),
+            scaffoldBackgroundColor: Colors.transparent,
+            textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(primary: _primarySurface)),
+            appBarTheme: AppBarTheme(elevation: 0, backgroundColor: Colors.transparent, iconTheme: IconThemeData(color: _primarySurface)),
             typography: Typography.material2018(),
             inputDecorationTheme: InputDecorationTheme(
-              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: _accent)),
               labelStyle: Typography.material2018().white.bodyText2,
             ),
             textSelectionTheme: TextSelectionThemeData(
-              cursorColor: Colors.white,
-              selectionColor: _swatch[200],
-              selectionHandleColor: _swatch[200],
+              cursorColor: _accent,
+              selectionColor: _accent.withOpacity(0.35),
+              selectionHandleColor: _accent,
             ),
           ),
           home: Builder(

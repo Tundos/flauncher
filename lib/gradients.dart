@@ -29,6 +29,14 @@ class FLauncherGradient {
 }
 
 mixin FLauncherGradients {
+  static final postloungeBrand = FLauncherGradient(
+    "c8a4f0e2-91b3-4c5d-8e7f-0a1b2c3d4e5f",
+    "Postlounge",
+    LinearGradient(
+      colors: [Color(0xFFF7F1EB), Color(0xFFEDE5DC)],
+      transform: GradientRotation(pi / 4),
+    ),
+  );
   static final greatWhale = FLauncherGradient(
     "8bbdc190-ff6c-496e-8033-3c217e78da36",
     "Great Whale",
@@ -85,6 +93,7 @@ mixin FLauncherGradients {
   );
 
   static List<FLauncherGradient> get all => [
+        postloungeBrand,
         greatWhale,
         viciousStance,
         teenNotebook,

@@ -99,8 +99,8 @@ class FLauncherDatabase extends _$FLauncherDatabase {
   FLauncherDatabase.connect(DatabaseConnection databaseConnection) : super.connect(databaseConnection) {
     if (kDebugMode && !Platform.environment.containsKey('FLUTTER_TEST')) {
       MoorInspectorBuilder()
-        ..bundleId = 'me.efesser.flauncher'
-        ..addDatabase('FLauncher', this)
+        ..bundleId = 'nl.postlounge.launcher'
+        ..addDatabase('Postlounge TV', this)
         ..build().start();
     }
   }

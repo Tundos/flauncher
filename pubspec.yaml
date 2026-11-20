@@ -1,5 +1,5 @@
 name: flauncher
-description: Flutter-based Android TV launcher.
+description: Postlounge TV — white-label Android TV launcher (FLauncher fork).
 
 version: 0.0.1
 
@@ -42,3 +42,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/images/

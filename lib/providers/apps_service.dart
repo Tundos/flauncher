@@ -21,6 +21,7 @@ import 'dart:collection';
 
 import 'package:flauncher/database.dart';
 import 'package:flauncher/flauncher_channel.dart';
+import 'package:flauncher/postlounge_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class AppsService extends ChangeNotifier {
   Future<void> _init() async {
     await _refreshState(shouldNotifyListeners: false);
     if (_database.wasCreated) {
+      await _hideOemApplications();
       await _initDefaultCategories();
     }
     _fLauncherChannel.addAppsChangedListener((event) async {
@@ -79,35 +81,28 @@ class AppsService extends ChangeNotifier {
         sideloaded: Value(data["sideloaded"]),
       );
 
+  Future<void> _hideOemApplications() async {
+    final toHide = _applications.where((app) => postloungeShouldHidePackage(app.packageName));
+    for (final app in toHide) {
+      await _database.updateApp(app.packageName, AppsCompanion(hidden: Value(true)));
+    }
+    _applications = await _database.listApplications();
+  }
+
   Future<void> _initDefaultCategories() => _database.transaction(() async {
-        final tvApplications = _applications.where((element) => element.sideloaded == false);
-        final nonTvApplications = _applications.where((element) => element.sideloaded == true);
-        if (tvApplications.isNotEmpty) {
-          await addCategory("TV Applications", shouldNotifyListeners: false);
-          final tvAppsCategory =
-              _categoriesWithApps.map((e) => e.category).firstWhere((element) => element.name == "TV Applications");
+        final visibleTvApplications =
+            _applications.where((element) => !element.sideloaded && !element.hidden).toList();
+        if (visibleTvApplications.isNotEmpty) {
+          await addCategory("Apps", shouldNotifyListeners: false);
+          final appsCategory =
+              _categoriesWithApps.map((e) => e.category).firstWhere((element) => element.name == "Apps");
           await setCategoryType(
-            tvAppsCategory,
-            CategoryType.grid,
+            appsCategory,
+            CategoryType.row,
             shouldNotifyListeners: false,
           );
-          for (final app in tvApplications) {
-            await addToCategory(app, tvAppsCategory, shouldNotifyListeners: false);
-          }
-        }
-        if (nonTvApplications.isNotEmpty) {
-          await addCategory(
-            "Non-TV Applications",
-            shouldNotifyListeners: false,
-          );
-          final nonTvAppsCategory =
-              _categoriesWithApps.map((e) => e.category).firstWhere((element) => element.name == "Non-TV Applications");
-          for (final app in nonTvApplications) {
-            await addToCategory(
-              app,
-              nonTvAppsCategory,
-              shouldNotifyListeners: false,
-            );
+          for (final app in visibleTvApplications) {
+            await addToCategory(app, appsCategory, shouldNotifyListeners: false);
           }
         }
         _categoriesWithApps = await _database.listCategoriesWithVisibleApps();

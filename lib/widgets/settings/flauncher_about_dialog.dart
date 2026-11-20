@@ -35,7 +35,7 @@ class FLauncherAboutDialog extends StatelessWidget {
       applicationName: packageInfo.appName,
       applicationVersion: "${packageInfo.version} (${packageInfo.buildNumber})",
       applicationIcon: Image.asset("assets/logo.png", height: 72),
-      applicationLegalese: "© 2021 Étienne Fesser",
+      applicationLegalese: "© Postlounge",
       children: [
         SizedBox(height: 24),
         RichText(
@@ -43,16 +43,11 @@ class FLauncherAboutDialog extends StatelessWidget {
             style: textStyle,
             children: [
               TextSpan(
-                text: "FLauncher is an open-source alternative launcher for Android TV.\n"
-                    "Source code available at ",
+                text: "Postlounge TV is a white-label Android TV launcher for Acer Aopen L20, "
+                    "based on open-source FLauncher.\n",
               ),
-              TextSpan(text: "https://gitlab.com/etiennf01/flauncher", style: underlined),
-              TextSpan(text: ".\n\n"),
-              TextSpan(text: "Logo by Katie "),
-              TextSpan(text: "@fureturoe", style: underlined),
-              TextSpan(text: ", "),
-              TextSpan(text: "design by "),
-              TextSpan(text: "@FXCostanzo", style: underlined),
+              TextSpan(text: "Upstream: ", style: textStyle),
+              TextSpan(text: "https://gitlab.com/flauncher/flauncher", style: underlined),
               TextSpan(text: "."),
             ],
           ),
