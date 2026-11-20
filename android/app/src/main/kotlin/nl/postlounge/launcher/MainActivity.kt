@@ -37,8 +37,16 @@ private const val EVENT_CHANNEL = "nl.postlounge.launcher/event"
 class MainActivity : FlutterActivity() {
     val launcherAppsCallbacks = ArrayList<LauncherApps.Callback>()
 
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        PostloungeShortcutContext.packageManager = packageManager
+        PostloungeShortcutContext.activity = this
+    }
+
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        PostloungeShortcutContext.packageManager = packageManager
+        PostloungeShortcutContext.activity = this
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getApplications" -> result.success(getApplications())
@@ -48,6 +56,9 @@ class MainActivity : FlutterActivity() {
                 "uninstallApp" -> result.success(uninstallApp(call.arguments as String))
                 "isDefaultLauncher" -> result.success(isDefaultLauncher())
                 "checkForGetContentAvailability" -> result.success(checkForGetContentAvailability())
+                "getResolvedSystemShortcuts" -> result.success(getResolvedSystemShortcuts())
+                "launchSystemShortcut" -> result.success(launchSystemShortcut(call.arguments as String))
+                "scanSettingsDiagnostic" -> result.success(scanSettingsDiagnostic())
                 else -> throw IllegalArgumentException()
             }
         }
@@ -93,6 +104,9 @@ class MainActivity : FlutterActivity() {
     override fun onDestroy() {
         val launcherApps = getSystemService(LAUNCHER_APPS_SERVICE) as LauncherApps
         launcherAppsCallbacks.forEach(launcherApps::unregisterCallback)
+        if (PostloungeShortcutContext.activity === this) {
+            PostloungeShortcutContext.activity = null
+        }
         super.onDestroy()
     }
 
@@ -139,12 +153,23 @@ class MainActivity : FlutterActivity() {
         false
     }
 
-    private fun openSettings() = try {
-        startActivity(Intent(Settings.ACTION_SETTINGS))
-        true
-    } catch (e: Exception) {
-        false
-    }
+    private fun openSettings() = launchSystemShortcut("settings_android")
+
+    private fun getResolvedSystemShortcuts(): List<Map<String, String>> =
+        PostloungeSystemShortcuts.resolveAll(packageManager).map {
+            mapOf(
+                "id" to it.id,
+                "title" to it.title,
+                "section" to it.section,
+                "resolvedLabel" to it.resolvedLabel,
+            )
+        }
+
+    private fun launchSystemShortcut(id: String): Boolean =
+        PostloungeSystemShortcuts.launch(packageManager, id)
+
+    private fun scanSettingsDiagnostic(): List<Map<String, String>> =
+        PostloungeSystemShortcuts.scanDiagnostic(packageManager)
 
     private fun openAppInfo(packageName: String) = try {
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)

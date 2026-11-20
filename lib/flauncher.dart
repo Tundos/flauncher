@@ -96,7 +96,7 @@ class FLauncher extends StatelessWidget {
                 constraints: BoxConstraints(),
                 splashRadius: 20,
                 icon: Icon(Icons.settings_outlined),
-                onPressed: () => showPostloungeSettings(context),
+                onPressed: () => showPostloungePublicSettings(context),
               ),
             ],
           ),

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'package:flauncher/providers/apps_service.dart';
 import 'package:flauncher/providers/settings_service.dart';
+import 'package:flauncher/widgets/settings/diagnostic_panel_page.dart';
 import 'package:flauncher/widgets/settings/applications_panel_page.dart';
 import 'package:flauncher/widgets/settings/categories_panel_page.dart';
 import 'package:flauncher/widgets/settings/flauncher_about_dialog.dart';
@@ -33,7 +33,11 @@ class SettingsPanelPage extends StatelessWidget {
   Widget build(BuildContext context) => Consumer<SettingsService>(
         builder: (context, settingsService, __) => Column(
           children: [
-            Text("Settings", style: Theme.of(context).textTheme.titleLarge),
+            Text("Launcher admin", style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              "PIN protected — layout, wallpaper, hidden apps",
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+            ),
             Divider(),
             TextButton(
               child: Row(
@@ -69,12 +73,12 @@ class SettingsPanelPage extends StatelessWidget {
             TextButton(
               child: Row(
                 children: [
-                  Icon(Icons.settings_outlined),
+                  Icon(Icons.troubleshoot_outlined),
                   Container(width: 8),
-                  Text("Android settings", style: Theme.of(context).textTheme.bodyMedium),
+                  Text("OEM discovery (diagnostic)", style: Theme.of(context).textTheme.bodyMedium),
                 ],
               ),
-              onPressed: () => context.read<AppsService>().openSettings(),
+              onPressed: () => Navigator.of(context).pushNamed(DiagnosticPanelPage.routeName),
             ),
             Divider(),
             SwitchListTile(

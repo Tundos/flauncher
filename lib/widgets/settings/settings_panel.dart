@@ -20,6 +20,7 @@ import 'package:flauncher/widgets/right_panel_dialog.dart';
 import 'package:flauncher/widgets/settings/applications_panel_page.dart';
 import 'package:flauncher/widgets/settings/categories_panel_page.dart';
 import 'package:flauncher/widgets/settings/category_panel_page.dart';
+import 'package:flauncher/widgets/settings/diagnostic_panel_page.dart';
 import 'package:flauncher/widgets/settings/gradient_panel_page.dart';
 import 'package:flauncher/widgets/settings/settings_panel_page.dart';
 import 'package:flauncher/widgets/settings/unsplash_panel_page.dart';
@@ -66,6 +67,8 @@ class _SettingsPanelState extends State<SettingsPanel> {
                     return MaterialPageRoute(
                       builder: (_) => CategoryPanelPage(categoryId: settings.arguments! as int),
                     );
+                  case DiagnosticPanelPage.routeName:
+                    return MaterialPageRoute(builder: (_) => const DiagnosticPanelPage());
                 }
               },
             ),
