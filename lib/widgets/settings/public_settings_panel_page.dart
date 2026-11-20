@@ -35,12 +35,26 @@ class _PublicSettingsPanelPageState extends State<PublicSettingsPanelPage> {
     await _shortcutsFuture;
   }
 
-  Future<void> _launch(String id) async {
+  Future<void> _launch(String id, String title) async {
+    if (postloungeShortcutNeedsConfirm(id)) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(title),
+          content: const Text('Weet je zeker dat je dit wilt uitvoeren?\nAre you sure?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuleren')),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Ja / Yes')),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
     final ok = await _channel.launchSystemShortcut(id);
     if (!mounted) return;
     if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open this menu on this device')),
+        const SnackBar(content: Text('Kon actie niet uitvoeren op dit apparaat')),
       );
     }
   }
@@ -97,7 +111,7 @@ class _PublicSettingsPanelPageState extends State<PublicSettingsPanelPage> {
                           _ShortcutTile(
                             title: shortcut.title,
                             subtitle: shortcut.resolvedLabel,
-                            onActivate: () => _launch(shortcut.id),
+                            onActivate: () => _launch(shortcut.id, shortcut.title),
                           ),
                       ],
                     const SizedBox(height: 12),

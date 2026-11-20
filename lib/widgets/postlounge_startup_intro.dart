@@ -24,16 +24,14 @@ class PostloungeStartupIntro extends StatefulWidget {
 class _PostloungeStartupIntroState extends State<PostloungeStartupIntro> {
   VideoPlayerController? _controller;
   bool _introDone = false;
-  bool _wantsIntro = false;
   bool _ready = false;
   bool _finishing = false;
-  Object? _initError;
+  bool _endDetectionArmed = false;
 
   @override
   void initState() {
     super.initState();
-    _wantsIntro = postloungeShouldPlayStartupIntro(widget.sharedPreferences);
-    if (_wantsIntro) {
+    if (postloungeShouldPlayStartupIntro(widget.sharedPreferences)) {
       _prepareIntro();
     } else {
       _introDone = true;
@@ -49,32 +47,36 @@ class _PostloungeStartupIntroState extends State<PostloungeStartupIntro> {
     try {
       await controller.initialize();
       await controller.setVolume(1);
-      controller.addListener(_onPlaybackUpdate);
       if (!mounted) return;
       setState(() => _ready = true);
       await controller.play();
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _initError = e;
-          _introDone = true;
-        });
-      }
+      await _armEndDetection(controller);
+    } catch (_) {
+      if (mounted) setState(() => _introDone = true);
     }
   }
 
-  void _onPlaybackUpdate() {
-    final controller = _controller;
-    if (controller == null || _finishing || !_ready) return;
-    if (!controller.value.isInitialized) return;
-
+  Future<void> _armEndDetection(VideoPlayerController controller) async {
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
+    if (!mounted || _finishing) return;
     final duration = controller.value.duration;
-    final position = controller.value.position;
-    if (controller.value.isCompleted) {
-      _finishIntro(markPlayed: true);
-      return;
+    for (var i = 0; i < 30 && duration == Duration.zero; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      if (controller.value.duration > Duration.zero) break;
     }
-    if (duration > Duration.zero && position >= duration - const Duration(milliseconds: 300)) {
+    _endDetectionArmed = true;
+    controller.addListener(_onPlaybackUpdate);
+  }
+
+  void _onPlaybackUpdate() {
+    if (!_endDetectionArmed || _finishing) return;
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    final position = controller.value.position;
+    if (position < const Duration(milliseconds: 800)) return;
+
+    if (controller.value.isCompleted) {
       _finishIntro(markPlayed: true);
     }
   }
