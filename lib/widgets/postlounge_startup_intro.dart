@@ -1,19 +1,16 @@
 /*
- * One-time startup intro video with audio (first launch per install).
+ * Startup intro video — plays on each cold start of the launcher (new process).
  */
 
 import 'package:flauncher/postlounge_video_assets.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
 class PostloungeStartupIntro extends StatefulWidget {
-  final SharedPreferences sharedPreferences;
   final Widget child;
 
   const PostloungeStartupIntro({
     super.key,
-    required this.sharedPreferences,
     required this.child,
   });
 
@@ -31,11 +28,7 @@ class _PostloungeStartupIntroState extends State<PostloungeStartupIntro> {
   @override
   void initState() {
     super.initState();
-    if (postloungeShouldPlayStartupIntro(widget.sharedPreferences)) {
-      _prepareIntro();
-    } else {
-      _introDone = true;
-    }
+    _prepareIntro();
   }
 
   Future<void> _prepareIntro() async {
@@ -59,10 +52,8 @@ class _PostloungeStartupIntroState extends State<PostloungeStartupIntro> {
   Future<void> _armEndDetection(VideoPlayerController controller) async {
     await Future<void>.delayed(const Duration(milliseconds: 1200));
     if (!mounted || _finishing) return;
-    final duration = controller.value.duration;
-    for (var i = 0; i < 30 && duration == Duration.zero; i++) {
+    for (var i = 0; i < 30 && controller.value.duration == Duration.zero; i++) {
       await Future<void>.delayed(const Duration(milliseconds: 100));
-      if (controller.value.duration > Duration.zero) break;
     }
     _endDetectionArmed = true;
     controller.addListener(_onPlaybackUpdate);
@@ -72,22 +63,16 @@ class _PostloungeStartupIntroState extends State<PostloungeStartupIntro> {
     if (!_endDetectionArmed || _finishing) return;
     final controller = _controller;
     if (controller == null || !controller.value.isInitialized) return;
-
-    final position = controller.value.position;
-    if (position < const Duration(milliseconds: 800)) return;
-
+    if (controller.value.position < const Duration(milliseconds: 800)) return;
     if (controller.value.isCompleted) {
-      _finishIntro(markPlayed: true);
+      _finishIntro();
     }
   }
 
-  Future<void> _finishIntro({required bool markPlayed}) async {
+  Future<void> _finishIntro() async {
     if (_finishing) return;
     _finishing = true;
     _controller?.removeListener(_onPlaybackUpdate);
-    if (markPlayed) {
-      await postloungeMarkStartupIntroPlayed(widget.sharedPreferences);
-    }
     await _controller?.pause();
     await _controller?.dispose();
     _controller = null;
@@ -99,7 +84,7 @@ class _PostloungeStartupIntroState extends State<PostloungeStartupIntro> {
     }
   }
 
-  Future<void> _skipIntro() => _finishIntro(markPlayed: true);
+  Future<void> _skipIntro() => _finishIntro();
 
   @override
   void dispose() {

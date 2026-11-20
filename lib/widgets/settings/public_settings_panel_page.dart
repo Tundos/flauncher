@@ -53,9 +53,10 @@ class _PublicSettingsPanelPageState extends State<PublicSettingsPanelPage> {
     final ok = await _channel.launchSystemShortcut(id);
     if (!mounted) return;
     if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kon actie niet uitvoeren op dit apparaat')),
-      );
+      final message = postloungeShortcutNeedsConfirm(id)
+          ? 'Geen power-actie gevonden op dit apparaat. Export OEM discovery (PIN) en zoek package/activity met power, shutdown of standby.'
+          : 'Kon dit menu niet openen op dit apparaat.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -81,7 +82,7 @@ class _PublicSettingsPanelPageState extends State<PublicSettingsPanelPage> {
               if (snapshot.hasError) {
                 return Center(child: Text('Could not load menus\n${snapshot.error}'));
               }
-              final shortcuts = snapshot.data ?? [];
+              final shortcuts = postloungeSortShortcuts(snapshot.data ?? []);
               if (shortcuts.isEmpty) {
                 return Center(
                   child: Text(
@@ -91,15 +92,15 @@ class _PublicSettingsPanelPageState extends State<PublicSettingsPanelPage> {
                   ),
                 );
               }
-              final bySection = <String, List<PostloungeSystemShortcut>>{};
-              for (final item in shortcuts) {
-                bySection.putIfAbsent(item.section, () => []).add(item);
-              }
               return FocusTraversalGroup(
                 child: ListView(
                   children: [
-                    for (final section in kPostloungeShortcutSectionOrder)
-                      if (bySection[section]?.isNotEmpty == true) ...[
+                    for (final section in kPostloungeShortcutSectionOrder) ...[
+                      ...() {
+                        final sectionItems =
+                            shortcuts.where((item) => item.section == section).toList(growable: false);
+                        if (sectionItems.isEmpty) return <Widget>[];
+                        return <Widget>[
                         Padding(
                           padding: const EdgeInsets.only(top: 8, bottom: 4),
                           child: Text(
@@ -107,13 +108,15 @@ class _PublicSettingsPanelPageState extends State<PublicSettingsPanelPage> {
                             style: theme.textTheme.titleSmall?.copyWith(color: _accent),
                           ),
                         ),
-                        for (final shortcut in bySection[section]!)
+                        for (final shortcut in sectionItems)
                           _ShortcutTile(
                             title: shortcut.title,
                             subtitle: shortcut.resolvedLabel,
                             onActivate: () => _launch(shortcut.id, shortcut.title),
                           ),
-                      ],
+                        ];
+                      }(),
+                    ],
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       onPressed: _reload,

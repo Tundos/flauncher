@@ -101,7 +101,6 @@ class FLauncherApp extends StatelessWidget {
             ),
           ),
           home: PostloungeStartupIntro(
-            sharedPreferences: _sharedPreferences,
             child: Builder(
               builder: (context) => WillPopScope(
                 onWillPop: () => shouldPopScope(context),

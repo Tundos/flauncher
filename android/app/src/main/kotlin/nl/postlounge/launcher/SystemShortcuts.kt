@@ -175,39 +175,26 @@ object PostloungeSystemShortcuts {
             ),
         ),
         ShortcutCandidate(
+            id = "power_standby",
+            title = "Standby · Sleep",
+            section = "power",
+            builders = emptyList(),
+        ),
+        ShortcutCandidate(
             id = "power_shutdown",
             title = "Uitschakelen · Turn off",
             section = "power",
-            builders = listOf(
-                {
-                    Intent("android.intent.action.ACTION_REQUEST_SHUTDOWN").putExtra(
-                        "android.intent.extra.KEY_CONFIRM",
-                        false,
-                    )
-                },
-                { Intent("android.intent.action.REQUEST_SHUTDOWN") },
-                { component("com.siviton.systemui", "com.joyar.settingslib.power.ShutdownActivity") },
-            ),
+            builders = emptyList(),
         ),
         ShortcutCandidate(
             id = "power_reboot",
             title = "Herstarten · Restart",
             section = "power",
-            builders = listOf(
-                { Intent(Intent.ACTION_REBOOT).putExtra("android.intent.extra.KEY_CONFIRM", false) },
-                { Intent("android.intent.action.REBOOT") },
-            ),
-        ),
-        ShortcutCandidate(
-            id = "power_standby",
-            title = "Standby · Sleep",
-            section = "power",
-            builders = listOf(
-                { Intent("android.intent.action.SCREEN_OFF") },
-                { component("com.zeasn.whale.open.launcher.technical", "com.zeasn.whale.open.launcher.technical.ui.SleepActivity") },
-            ),
+            builders = emptyList(),
         ),
     )
+
+    private val powerHintKeywords = listOf("power", "shutdown", "shut", "sleep", "standby", "reboot", "restart", "suspend")
 
     private fun packageManagerLaunch(packageName: String): Intent? {
         val pm = PostloungeShortcutContext.packageManager ?: return null
@@ -221,8 +208,8 @@ object PostloungeSystemShortcuts {
     fun resolveAll(pm: PackageManager): List<ResolvedShortcut> {
         val resolved = LinkedHashMap<String, ResolvedShortcut>()
         for (candidate in candidates()) {
+            if (candidate.section == "power") continue
             if (resolved.containsKey(candidate.id)) continue
-            val keepUnresolved = candidate.section == "power"
             for (builder in candidate.builders) {
                 val base = builder() ?: continue
                 val intent = base.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -230,46 +217,86 @@ object PostloungeSystemShortcuts {
                     pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
                 } catch (_: Exception) {
                     null
-                }
-                if (info != null) {
-                    resolved[candidate.id] = ResolvedShortcut(
-                        candidate.id,
-                        candidate.title,
-                        candidate.section,
-                        intent,
-                        info.loadLabel(pm).toString(),
-                    )
-                    break
-                }
-                if (keepUnresolved) {
-                    resolved[candidate.id] = ResolvedShortcut(
-                        candidate.id,
-                        candidate.title,
-                        candidate.section,
-                        intent,
-                        "",
-                    )
-                    break
-                }
+                } ?: continue
+                resolved[candidate.id] = ResolvedShortcut(
+                    candidate.id,
+                    candidate.title,
+                    candidate.section,
+                    intent,
+                    info.loadLabel(pm).toString(),
+                )
+                break
             }
         }
+        powerShortcuts(pm).forEach { resolved[it.id] = it }
         return resolved.values.toList()
     }
 
+    private fun powerShortcuts(pm: PackageManager): List<ResolvedShortcut> {
+        val fromDevice = discoverPowerActivities(pm)
+        return listOf("power_standby", "power_shutdown", "power_reboot").map { id ->
+            val base = candidates().first { it.id == id }
+            val match = pickPowerMatch(id, fromDevice)
+            if (match != null) {
+                ResolvedShortcut(id, base.title, "power", match.intent, match.label)
+            } else {
+                ResolvedShortcut(id, base.title, "power", Intent(), "")
+            }
+        }
+    }
+
+    private data class PowerMatch(val intent: Intent, val label: String)
+
+    private fun discoverPowerActivities(pm: PackageManager): List<PowerMatch> {
+        val matches = mutableListOf<PowerMatch>()
+        for (row in scanDiagnostic(pm)) {
+            val packageName = row["package"] ?: continue
+            val activityName = row["activity"] ?: continue
+            val label = row["label"] ?: activityName
+            val haystack = "$packageName $activityName $label"
+            if (powerHintKeywords.none { haystack.contains(it, ignoreCase = true) }) continue
+            val intent = Intent().setComponent(ComponentName(packageName, activityName))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) == null) continue
+            matches.add(PowerMatch(intent, label))
+        }
+        return matches
+    }
+
+    private fun pickPowerMatch(id: String, fromDevice: List<PowerMatch>): PowerMatch? {
+        val keywords = when (id) {
+            "power_standby" -> listOf("standby", "sleep", "suspend")
+            "power_shutdown" -> listOf("shutdown", "shut", "poweroff", "turnoff")
+            "power_reboot" -> listOf("reboot", "restart")
+            else -> emptyList()
+        }
+        fromDevice.firstOrNull { match ->
+            val hay = "${match.label} ${match.intent.component?.className}".lowercase()
+            keywords.any { hay.contains(it) }
+        }?.let { return it }
+        return null
+    }
+
     fun launch(pm: PackageManager, id: String): Boolean {
-        val shortcut = resolveAll(pm).firstOrNull { it.id == id }
-        val intent = shortcut?.intent ?: intentForId(id) ?: return false
+        if (id.startsWith("power_")) return launchPower(id, pm)
+        val shortcut = resolveAll(pm).firstOrNull { it.id == id } ?: return false
+        return startIntent(shortcut.intent)
+    }
+
+    private fun launchPower(id: String, pm: PackageManager): Boolean {
+        val shortcut = powerShortcuts(pm).firstOrNull { it.id == id } ?: return false
+        if (shortcut.intent.component == null) return false
+        return startIntent(shortcut.intent)
+    }
+
+    private fun startIntent(intent: Intent): Boolean {
+        if (intent.component == null && intent.action == null) return false
         return try {
             PostloungeShortcutContext.activity?.startActivity(intent) ?: return false
             true
         } catch (_: Exception) {
             false
         }
-    }
-
-    private fun intentForId(id: String): Intent? {
-        val candidate = candidates().firstOrNull { it.id == id } ?: return null
-        return candidate.builders.firstNotNullOfOrNull { it() }?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
 
     fun scanDiagnostic(pm: PackageManager): List<Map<String, String>> {
