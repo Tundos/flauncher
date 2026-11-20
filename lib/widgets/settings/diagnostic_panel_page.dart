@@ -32,6 +32,23 @@ class _DiagnosticPanelPageState extends State<DiagnosticPanelPage> {
     await _scanFuture;
   }
 
+  Future<void> _export() async {
+    final path = await _channel.exportSettingsDiagnostic();
+    if (!mounted) return;
+    if (path == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Export failed — check storage permission')),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Saved scan list:\n$path'),
+        duration: const Duration(seconds: 8),
+      ),
+    );
+  }
+
   void _copyLine(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -107,6 +124,12 @@ class _DiagnosticPanelPageState extends State<DiagnosticPanelPage> {
             },
           ),
         ),
+        OutlinedButton.icon(
+          onPressed: _export,
+          icon: const Icon(Icons.save_alt),
+          label: const Text('Export naar Download / USB'),
+        ),
+        const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: _rescan,
           icon: const Icon(Icons.refresh),

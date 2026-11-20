@@ -99,6 +99,9 @@ class FLauncherChannel {
         .toList(growable: false);
   }
 
+  Future<String?> exportSettingsDiagnostic() async =>
+      await _methodChannel.invokeMethod<String>('exportSettingsDiagnostic');
+
   void addAppsChangedListener(void Function(Map<dynamic, dynamic>) listener) =>
       _eventChannel.receiveBroadcastStream().listen((event) => listener(event));
 }

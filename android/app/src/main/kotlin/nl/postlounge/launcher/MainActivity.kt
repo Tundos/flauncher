@@ -59,6 +59,7 @@ class MainActivity : FlutterActivity() {
                 "getResolvedSystemShortcuts" -> result.success(getResolvedSystemShortcuts())
                 "launchSystemShortcut" -> result.success(launchSystemShortcut(call.arguments as String))
                 "scanSettingsDiagnostic" -> result.success(scanSettingsDiagnostic())
+                "exportSettingsDiagnostic" -> result.success(exportSettingsDiagnostic())
                 else -> throw IllegalArgumentException()
             }
         }
@@ -170,6 +171,9 @@ class MainActivity : FlutterActivity() {
 
     private fun scanSettingsDiagnostic(): List<Map<String, String>> =
         PostloungeSystemShortcuts.scanDiagnostic(packageManager)
+
+    private fun exportSettingsDiagnostic(): String? =
+        PostloungeSystemShortcuts.exportDiagnostic(packageManager)
 
     private fun openAppInfo(packageName: String) = try {
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)

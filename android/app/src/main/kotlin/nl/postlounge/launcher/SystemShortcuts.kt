@@ -3,7 +3,12 @@ package nl.postlounge.launcher
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Environment
 import android.provider.Settings
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 data class ShortcutCandidate(
     val id: String,
@@ -27,52 +32,89 @@ object PostloungeSystemShortcuts {
         "projector",
         "keystone",
         "focus",
+        "projection",
+        "angle",
         "tv",
         "input",
+        "source",
         "display",
         "acer",
         "aopen",
         "hdmi",
         "panel",
         "video",
-        "source",
+        "factory",
+        "mediatek",
+        "siviton",
+        "zeasn",
+        "joyar",
+        "whale",
+        "autofocus",
     )
+
+    private fun component(packageName: String, className: String): Intent? =
+        Intent().setComponent(ComponentName(packageName, className))
 
     fun candidates(): List<ShortcutCandidate> = listOf(
         ShortcutCandidate(
-            id = "tv_input_picker",
-            title = "TV input / source",
+            id = "zeasn_sources",
+            title = "Bronnen · Sources",
             section = "input",
             builders = listOf(
+                { component("com.zeasn.whale.open.launcher.technical", "com.zeasn.whale.open.launcher.technical.ui.SourcesActivity") },
                 { Intent("com.android.tv.action.VIEW_INPUTS") },
-                { Intent("com.android.tv.action.OPEN_INPUTS_PANEL") },
                 { Intent("android.media.tv.action.SHOW_TV_INPUT") },
-                {
-                    Intent().setComponent(
-                        ComponentName("com.android.tv", "com.android.tv.TvInputSelectorActivity"),
-                    )
-                },
-                {
-                    Intent().setComponent(
-                        ComponentName("com.google.android.tv", "com.android.tv.TvInputSelectorActivity"),
-                    )
-                },
-                { Intent(Settings.ACTION_INPUT_METHOD_SETTINGS) },
+                { component("com.android.tv", "com.android.tv.TvInputSelectorActivity") },
             ),
         ),
         ShortcutCandidate(
-            id = "oem_picture",
-            title = "Projector picture / display",
+            id = "tv_input_picker",
+            title = "TV-ingang kiezen · TV input",
+            section = "input",
+            builders = listOf(
+                { Intent("com.android.tv.action.OPEN_INPUTS_PANEL") },
+                { component("com.google.android.tv", "com.android.tv.TvInputSelectorActivity") },
+            ),
+        ),
+        ShortcutCandidate(
+            id = "zeasn_picture",
+            title = "Beeld · Picture",
             section = "picture",
             builders = listOf(
-                { Intent().setComponent(ComponentName("com.acer.settings", "com.acer.settings.MainActivity")) },
-                { Intent().setComponent(ComponentName("com.acer.settings", "com.acer.settings.PictureActivity")) },
-                { Intent("com.acer.action.PICTURE_SETTINGS") },
-                { Intent().setComponent(ComponentName("com.acer.photowizard", "com.acer.photowizard.MainActivity")) },
-                { Intent().setComponent(ComponentName("com.acer.dashboard", "com.acer.dashboard.MainActivity")) },
-                { Intent().setComponent(ComponentName("com.aopen.settings", "com.aopen.settings.MainActivity")) },
-                { Intent().setComponent(ComponentName("com.softwinner.tvsetting", "com.softwinner.tvsetting.MainUI")) },
-                { Intent().setComponent(ComponentName("com.softwinner.tvsetting", "com.softwinner.tvsetting.TvSettingUI")) },
+                { component("com.zeasn.whale.open.launcher.technical", "com.zeasn.whale.open.launcher.technical.ui.BigPictureActivity") },
+                { component("com.zeasn.whale.open.launcher.technical", "com.zeasn.whale.open.launcher.technical.ui.AdPictureActivity") },
+            ),
+        ),
+        ShortcutCandidate(
+            id = "oem_keystone",
+            title = "Keystone / hoek · Angle",
+            section = "picture",
+            builders = listOf(
+                { component("com.siviton.systemui", "com.joyar.settingslib.setup.projection.AngleActivity") },
+            ),
+        ),
+        ShortcutCandidate(
+            id = "oem_focus_manual",
+            title = "Scherpstellen (handmatig) · Focus",
+            section = "picture",
+            builders = listOf(
+                { component("com.siviton.autofocus", "com.siviton.autofocus.ui.ManualFocusActivity") },
+            ),
+        ),
+        ShortcutCandidate(
+            id = "oem_focus_auto",
+            title = "Autofocus · Auto focus",
+            section = "picture",
+            builders = listOf(
+                { component("com.siviton.autofocus", "com.siviton.autofocus.ui.AutoFocusActivity") },
+            ),
+        ),
+        ShortcutCandidate(
+            id = "tv_display",
+            title = "Weergave · Display",
+            section = "picture",
+            builders = listOf(
+                { component("com.android.tv.settings", "com.android.tv.settings.device.display.daydream.DaydreamActivity") },
                 { Intent(Settings.ACTION_DISPLAY_SETTINGS) },
             ),
         ),
@@ -80,42 +122,51 @@ object PostloungeSystemShortcuts {
             id = "settings_wifi",
             title = "Wi‑Fi",
             section = "system",
-            builders = listOf({ Intent(Settings.ACTION_WIFI_SETTINGS) }),
+            builders = listOf(
+                { Intent(Settings.ACTION_WIFI_SETTINGS) },
+                { component("com.android.tv.settings", "com.android.tv.settings.connectivity.setup.WifiSetupActivity") },
+                { component("com.android.tv.settings", "com.android.tv.settings.connectivity.NetworkActivity") },
+            ),
         ),
         ShortcutCandidate(
             id = "settings_bluetooth",
             title = "Bluetooth",
             section = "system",
-            builders = listOf({ Intent(Settings.ACTION_BLUETOOTH_SETTINGS) }),
+            builders = listOf(
+                { Intent(Settings.ACTION_BLUETOOTH_SETTINGS) },
+                { component("com.android.tv.settings", "com.android.tv.settings.accessories.AccessoriesActivity") },
+            ),
         ),
         ShortcutCandidate(
             id = "settings_sound",
-            title = "Sound",
+            title = "Geluid · Sound",
             section = "system",
             builders = listOf(
+                { component("com.android.tv.settings", "com.android.tv.settings.device.sound.SoundActivity") },
                 { Intent(Settings.ACTION_SOUND_SETTINGS) },
-                { Intent("android.settings.SOUND_SETTINGS") },
             ),
         ),
         ShortcutCandidate(
             id = "settings_display",
-            title = "Display",
+            title = "Scherm · Display (Android)",
             section = "system",
             builders = listOf({ Intent(Settings.ACTION_DISPLAY_SETTINGS) }),
         ),
         ShortcutCandidate(
+            id = "settings_android_tv",
+            title = "Android TV-instellingen",
+            section = "system",
+            builders = listOf(
+                { component("com.android.tv.settings", "com.android.tv.settings.MainSettings") },
+                { packageManagerLaunch("com.android.tv.settings") },
+            ),
+        ),
+        ShortcutCandidate(
             id = "settings_android",
-            title = "Android settings",
+            title = "Android-instellingen · Settings",
             section = "system",
             builders = listOf(
                 { Intent(Settings.ACTION_SETTINGS) },
-                { Intent().setComponent(ComponentName("com.android.tv.settings", "com.android.tv.settings.MainSettings")) },
-                {
-                    Intent().setComponent(
-                        ComponentName("com.android.tv.settings", "com.android.tv.settings.system.FallbackHomeStub"),
-                    )
-                },
-                { packageManagerLaunch("com.android.tv.settings") },
                 { packageManagerLaunch("com.android.settings") },
             ),
         ),
@@ -171,6 +222,10 @@ object PostloungeSystemShortcuts {
         val rows = mutableListOf<Map<String, String>>()
 
         fun addRow(packageName: String, activityName: String, label: String) {
+            if (activityName.isBlank()) return
+            if (activityName == packageName) return
+            if (!activityName.startsWith("$packageName.")) return
+            if (activityName.endsWith(".EmptyStubActivity")) return
             val key = "$packageName/$activityName"
             if (!matches.add(key)) return
             rows.add(
@@ -199,6 +254,41 @@ object PostloungeSystemShortcuts {
             }
         }
         return rows.sortedWith(compareBy({ it["package"] }, { it["activity"] }))
+    }
+
+    fun exportDiagnostic(pm: PackageManager): String? {
+        val rows = scanDiagnostic(pm)
+        val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US).format(Date())
+        val fileName = "postlounge-oem-discovery-$timestamp.txt"
+        val header = buildString {
+            appendLine("# Postlounge TV OEM discovery export")
+            appendLine("# $timestamp")
+            appendLine("# package\tactivity\tlabel")
+            appendLine()
+        }
+        val body = rows.joinToString("\n") { row ->
+            "${row["package"]}\t${row["activity"]}\t${row["label"]}"
+        }
+        val content = header + body + "\n"
+
+        val candidates = mutableListOf<File>()
+        @Suppress("DEPRECATION")
+        val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        candidates.add(File(downloads, fileName))
+        PostloungeShortcutContext.activity?.getExternalFilesDir(null)?.let {
+            candidates.add(File(it, fileName))
+        }
+
+        for (file in candidates) {
+            try {
+                file.parentFile?.mkdirs()
+                file.writeText(content)
+                return file.absolutePath
+            } catch (_: Exception) {
+                continue
+            }
+        }
+        return null
     }
 }
 
