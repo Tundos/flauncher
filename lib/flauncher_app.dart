@@ -8,6 +8,7 @@ import 'package:flauncher/providers/apps_service.dart';
 import 'package:flauncher/providers/settings_service.dart';
 import 'package:flauncher/providers/wallpaper_service.dart';
 import 'package:flauncher/unsplash_service.dart';
+import 'package:flauncher/widgets/postlounge_startup_intro.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -99,10 +100,13 @@ class FLauncherApp extends StatelessWidget {
               selectionHandleColor: _accent,
             ),
           ),
-          home: Builder(
-            builder: (context) => WillPopScope(
-              onWillPop: () => shouldPopScope(context),
-              child: Actions(actions: {BackIntent: BackAction(context, systemNavigator: true)}, child: FLauncher()),
+          home: PostloungeStartupIntro(
+            sharedPreferences: _sharedPreferences,
+            child: Builder(
+              builder: (context) => WillPopScope(
+                onWillPop: () => shouldPopScope(context),
+                child: Actions(actions: {BackIntent: BackAction(context, systemNavigator: true)}, child: FLauncher()),
+              ),
             ),
           ),
         ),

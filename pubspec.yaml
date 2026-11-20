@@ -20,6 +20,7 @@ dependencies:
   shared_preferences: ^2.3.3
   sqlite3_flutter_libs: ^0.5.29
   unsplash_client: ^2.1.0
+  video_player: ^2.9.2
   webview_flutter: ^4.10.0
 
 dev_dependencies:
@@ -44,3 +45,4 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - assets/videos/
