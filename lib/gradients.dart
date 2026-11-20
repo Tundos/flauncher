@@ -33,8 +33,10 @@ mixin FLauncherGradients {
     "c8a4f0e2-91b3-4c5d-8e7f-0a1b2c3d4e5f",
     "Postlounge",
     LinearGradient(
-      colors: [Color(0xFFF7F1EB), Color(0xFFEDE5DC)],
-      transform: GradientRotation(pi / 4),
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFFF7F1EB), Color(0xFF5EB0FC), Color(0xFF007DFA)],
+      stops: [0.0, 0.45, 1.0],
     ),
   );
   static final greatWhale = FLauncherGradient(

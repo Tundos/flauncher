@@ -49,8 +49,8 @@ class AppsService extends ChangeNotifier {
 
   Future<void> _init() async {
     await _refreshState(shouldNotifyListeners: false);
+    await _hideConfiguredPackages();
     if (_database.wasCreated) {
-      await _hideOemApplications();
       await _initDefaultCategories();
     }
     _fLauncherChannel.addAppsChangedListener((event) async {
@@ -58,6 +58,7 @@ class AppsService extends ChangeNotifier {
         case "PACKAGE_ADDED":
         case "PACKAGE_CHANGED":
           await _database.persistApps((event["activitiesInfo"] as List<dynamic>).map(_buildAppCompanion).toList());
+          await _hideConfiguredPackages();
           break;
         case "PACKAGE_REMOVED":
           await _database.deleteApps([event["packageName"]]);
@@ -81,12 +82,15 @@ class AppsService extends ChangeNotifier {
         sideloaded: Value(data["sideloaded"]),
       );
 
-  Future<void> _hideOemApplications() async {
-    final toHide = _applications.where((app) => postloungeShouldHidePackage(app.packageName));
+  Future<void> _hideConfiguredPackages() async {
+    final toHide = _applications.where((app) => postloungeShouldHidePackage(app.packageName) && !app.hidden);
     for (final app in toHide) {
       await _database.updateApp(app.packageName, AppsCompanion(hidden: Value(true)));
     }
-    _applications = await _database.listApplications();
+    if (toHide.isNotEmpty) {
+      _categoriesWithApps = await _database.listCategoriesWithVisibleApps();
+      _applications = await _database.listApplications();
+    }
   }
 
   Future<void> _initDefaultCategories() => _database.transaction(() async {

@@ -7,6 +7,7 @@ const kPostloungeSettingsPin = '8494';
 
 /// Package names to hide on first-run catalog setup (refine on L20 hardware).
 const kPostloungeHiddenPackages = <String>{
+  'nl.postlounge.launcher',
   'com.android.tv.feedback',
   'com.google.android.tv.axel',
   'com.google.android.tvlauncher',
