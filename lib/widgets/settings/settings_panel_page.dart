@@ -84,31 +84,13 @@ class SettingsPanelPage extends StatelessWidget {
               title: Text("Use 24-hour time format"),
               dense: true,
             ),
-            Divider(),
-            SwitchListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 8),
-              value: settingsService.crashReportsEnabled,
-              onChanged: (value) => settingsService.setCrashReportsEnabled(value),
-              title: Text("Crash Reporting"),
-              dense: true,
-              subtitle: Text("Automatically send crash reports through Firebase Crashlytics."),
-            ),
-            Divider(),
-            SwitchListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 8),
-              value: settingsService.analyticsEnabled,
-              onChanged: (value) => settingsService.setAnalyticsEnabled(value),
-              title: Text("Analytics Reporting"),
-              dense: true,
-              subtitle: Text("Share analytics data through Firebase Analytics."),
-            ),
             Spacer(),
             TextButton(
               child: Row(
                 children: [
                   Icon(Icons.info_outline),
                   Container(width: 8),
-                  Text("About FLauncher", style: Theme.of(context).textTheme.bodyText2),
+                  Text("About Postlounge TV", style: Theme.of(context).textTheme.bodyText2),
                 ],
               ),
               onPressed: () => showDialog(

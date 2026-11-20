@@ -1,24 +1,8 @@
 /*
- * FLauncher
+ * FLauncher — Postlounge TV
  * Copyright (C) 2021  Étienne Fesser
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flauncher/actions.dart';
 import 'package:flauncher/providers/apps_service.dart';
 import 'package:flauncher/providers/settings_service.dart';
@@ -36,13 +20,10 @@ import 'flauncher_channel.dart';
 
 class FLauncherApp extends StatelessWidget {
   final SharedPreferences _sharedPreferences;
-  final FirebaseCrashlytics _firebaseCrashlytics;
-  final FirebaseAnalytics _firebaseAnalytics;
   final ImagePicker _imagePicker;
   final FLauncherChannel _fLauncherChannel;
   final FLauncherDatabase _fLauncherDatabase;
   final UnsplashService _unsplashService;
-  final RemoteConfig _remoteConfig;
 
   static const Color _accent = Color(0xFF007DFA);
   static const Color _primarySurface = Color(0xFFF7F1EB);
@@ -62,21 +43,17 @@ class FLauncherApp extends StatelessWidget {
 
   FLauncherApp(
     this._sharedPreferences,
-    this._firebaseCrashlytics,
-    this._firebaseAnalytics,
     this._imagePicker,
     this._fLauncherChannel,
     this._fLauncherDatabase,
     this._unsplashService,
-    this._remoteConfig,
   );
 
   @override
   Widget build(BuildContext context) => MultiProvider(
         providers: [
           ChangeNotifierProvider(
-              create: (_) =>
-                  SettingsService(_sharedPreferences, _firebaseCrashlytics, _firebaseAnalytics, _remoteConfig),
+              create: (_) => SettingsService(_sharedPreferences),
               lazy: false),
           ChangeNotifierProvider(create: (_) => AppsService(_fLauncherChannel, _fLauncherDatabase)),
           ChangeNotifierProxyProvider<SettingsService, WallpaperService>(

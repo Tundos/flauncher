@@ -5,3 +5,5 @@ analyzer:
     - lib/database.moor.dart
     - test/mocks.mocks.dart
     - test/generated
+    - build/**
+    - android/**
