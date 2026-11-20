@@ -11,14 +11,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unsplash_client/unsplash_client.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import 'flauncher_app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Paint.enableDithering = true;
-  WebView.platform = SurfaceAndroidWebView();
 
   final sharedPreferences = await SharedPreferences.getInstance();
   final imagePicker = ImagePicker();

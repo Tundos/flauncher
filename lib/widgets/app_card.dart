@@ -100,7 +100,7 @@ class _AppCardState extends State<AppCard> {
                                     padding: EdgeInsets.only(left: 8),
                                     child: Text(
                                       widget.application.name,
-                                      style: Theme.of(context).textTheme.caption,
+                                      style: Theme.of(context).textTheme.bodySmall,
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 3,
                                     ),

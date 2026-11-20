@@ -77,22 +77,21 @@ class FLauncherApp extends StatelessWidget {
           theme: ThemeData(
             brightness: Brightness.dark,
             primarySwatch: _swatch,
-            primaryColor: _accent,
+            colorScheme: ColorScheme.dark(
+              primary: _accent,
+              surface: const Color(0xFF1E1B18),
+              onPrimary: _primarySurface,
+            ),
             focusColor: _accent,
-            toggleableActiveColor: _accent,
-            // ignore: deprecated_member_use
-            accentColor: _accent,
-            cardColor: Color(0xFF2A2622),
-            canvasColor: Color(0xFF2A2622),
-            dialogBackgroundColor: Color(0xFF1E1B18),
-            backgroundColor: Color(0xFF1E1B18),
+            cardColor: const Color(0xFF2A2622),
+            canvasColor: const Color(0xFF2A2622),
+            dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF1E1B18)),
             scaffoldBackgroundColor: Colors.transparent,
-            textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(primary: _primarySurface)),
-            appBarTheme: AppBarTheme(elevation: 0, backgroundColor: Colors.transparent, iconTheme: IconThemeData(color: _primarySurface)),
-            typography: Typography.material2018(),
+            textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: _primarySurface)),
+            appBarTheme: const AppBarTheme(elevation: 0, backgroundColor: Colors.transparent),
             inputDecorationTheme: InputDecorationTheme(
               focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: _accent)),
-              labelStyle: Typography.material2018().white.bodyText2,
+              labelStyle: const TextStyle(color: Colors.white70),
             ),
             textSelectionTheme: TextSelectionThemeData(
               cursorColor: _accent,

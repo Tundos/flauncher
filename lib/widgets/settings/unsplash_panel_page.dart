@@ -32,7 +32,7 @@ class UnsplashPanelPage extends StatelessWidget {
         length: 2,
         child: Column(
           children: [
-            Text("Unsplash", style: Theme.of(context).textTheme.headline6),
+            Text("Unsplash", style: Theme.of(context).textTheme.titleLarge),
             Divider(),
             Material(
               type: MaterialType.transparency,
@@ -220,7 +220,7 @@ class _SearchTabState extends State<_SearchTab> {
                 padding: EdgeInsets.symmetric(horizontal: 4),
                 child: Text(
                   photo.username,
-                  style: Theme.of(context).textTheme.caption!.copyWith(decoration: TextDecoration.underline),
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(decoration: TextDecoration.underline),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
